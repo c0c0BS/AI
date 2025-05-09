@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>GPT-4.1 Textfragen</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      font-size: 2em;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      width: 300px;
+      max-width: 80%;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    h3 {
+      margin-top: 30px;
+      font-size: 1.5em;
+    }
+
+    pre {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      width: 90%;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 1rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h2>Stelle eine Textfrage an GPT-4.1</h2>
+
+  <input type="text" id="question" placeholder="Deine Frage..." onkeydown="checkEnter(event)">
+  <button onclick="ask()">Fragen</button>
+
+  <h3>Antwort:</h3>
+  <pre id="response">Auf Frage warten...</pre>
+
+  <script>
+    function checkEnter(event) {
+      if (event.key === "Enter") {
+        ask();
+      }
+    }
+
+    async function ask() {
+      const question = document.getElementById("question").value;
+      const responseEl = document.getElementById("response");
+      responseEl.textContent = "Denkt...";
+
+      document.getElementById("question").value = '';
+
+      try {
+        const res = await fetch("http://localhost:3000/api/ask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ question })
+        });
+
+        if (!res.ok) {
+          responseEl.textContent = "Fehler: " + res.statusText;
+          return;
+        }
+
+        const data = await res.json();
+        responseEl.textContent = data.answer || data.error || "Keine Antwort erhalten.";
+      } catch (err) {
+        responseEl.textContent = "Fehler: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
