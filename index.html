@@ -90,7 +90,7 @@
       document.getElementById("question").value = '';
 
       try {
-        const res = await fetch("http://localhost:3000/api/ask", {
+        const res = await fetch("http://192.168.178.65:3000/api/ask", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
