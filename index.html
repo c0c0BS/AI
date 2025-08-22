@@ -1,114 +1,102 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>GPT-4.1 Textfragen</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    h2 {
-      margin-bottom: 10px;
-      font-size: 2em;
-    }
-
-    input[type="text"] {
-      padding: 10px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      width: 300px;
-      max-width: 80%;
-      margin-bottom: 10px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    h3 {
-      margin-top: 30px;
-      font-size: 1.5em;
-    }
-
-    pre {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 600px;
-      width: 90%;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      font-size: 1rem;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat mit Günter 🐶</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 0;
+        }
+        #chat {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 70vh; /* 70% der Höhe des Bildschirms */
+            overflow-y: scroll;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        #inputContainer {
+            display: flex;
+            gap: 5px;
+        }
+        #userInput {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: none;
+            background: #4caf50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .user {
+            color: #007bff;
+        }
+        .bot {
+            color: #28a745;
+        }
+        .message {
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+    </style>
 </head>
 <body>
-  <h2>Stelle eine Textfrage an GPT-4.1</h2>
+    <h1 style="text-align:center;">Chat mit Günter 🐶</h1>
+    <div id="chat"></div>
+    <div id="inputContainer">
+        <input id="userInput" placeholder="Schreib was, coco..." />
+        <button onclick="sendMessage()">Senden</button>
+    </div>
 
-  <input type="text" id="question" placeholder="Deine Frage..." onkeydown="checkEnter(event)">
-  <button onclick="ask()">Fragen</button>
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById("userInput");
+            const msg = input.value.trim();
+            if (!msg) return;
 
-  <h3>Antwort:</h3>
-  <pre id="response">Auf Frage warten...</pre>
+            addMessage("Du", msg, "user");
+            input.value = "";
+            input.focus();
 
-  <script>
-    function checkEnter(event) {
-      if (event.key === "Enter") {
-        ask();
-      }
-    }
+            const res = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: msg })
+            });
 
-    async function ask() {
-      const question = document.getElementById("question").value;
-      const responseEl = document.getElementById("response");
-      responseEl.textContent = "Denkt...";
-
-      document.getElementById("question").value = '';
-
-      try {
-        const res = await fetch("http://192.168.178.65:3000/api/ask", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ question })
-        });
-
-        if (!res.ok) {
-          responseEl.textContent = "Fehler: " + res.statusText;
-          return;
+            const data = await res.json();
+            addMessage("Günter", data.reply, "bot");
         }
 
-        const data = await res.json();
-        responseEl.textContent = data.answer || data.error || "Keine Antwort erhalten.";
-      } catch (err) {
-        responseEl.textContent = "Fehler: " + err.message;
-      }
-    }
-  </script>
+        function addMessage(sender, text, cls) {
+            const chat = document.getElementById("chat");
+            const div = document.createElement("div");
+            div.classList.add("message", cls);
+            div.innerHTML = `<b>${sender}:</b> ${text}`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // Enter-Taste unterstützt senden
+        document.getElementById("userInput").addEventListener("keypress", function(e){
+            if(e.key === "Enter") sendMessage();
+        });
+    </script>
 </body>
 </html>
