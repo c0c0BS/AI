@@ -1,11 +1,12 @@
 # main.py
 from flask import Flask, render_template, request, jsonify
 from groq import Groq
+import os
 
 app = Flask(__name__)
 
-# Deinen API Key einfügen
-client = Groq(api_key=${{ secrets.API_KEY }})
+# API Key aus Umgebungsvariable laden
+client = Groq(api_key=os.environ["API_KEY"])
 
 # Chat-Verlauf speichern
 messages = [
